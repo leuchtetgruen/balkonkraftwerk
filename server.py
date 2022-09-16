@@ -61,6 +61,12 @@ class TapoServer(BaseHTTPRequestHandler):
         # return data['result']
         return ret
 
+    def sanitized_path(self):
+        path = self.path.removeprefix("/")
+        path = path.replace("..", ".")
+
+        return path
+
     #Handler for the GET requests
     def do_GET(self):
         self.send_response(200)
@@ -79,7 +85,7 @@ class TapoServer(BaseHTTPRequestHandler):
                 self.path = "/index.html"
 
             html = ''
-            with open(self.path.replace("/", "")) as file:
+            with open(self.sanitized_path()) as file:
                 html = file.read()
             self.wfile.write((html).encode())
 
