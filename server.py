@@ -3,6 +3,7 @@ import numpy as np
 import time
 import threading
 import os
+import yaml
 from PyP100 import PyP110
 from dotenv import load_dotenv
 
@@ -10,9 +11,20 @@ from http.server import BaseHTTPRequestHandler,HTTPServer
 
 from datetime import datetime, timedelta
 
+def currentOverpowerThreshold():
+    daily_thresholds = [200] * 7
+    with open("overpower.yml", 'r') as stream:
+        daily_thresholds = yaml.safe_load(stream)
+
+    weekday = datetime.today().weekday()
+
+    return daily_thresholds[weekday]
+
+def isOverpowerFeatureOn():
+    return ( int(os.getenv("OVERPOWER") or 0) > 0 )
+
 def action_thread():
     overpowerOn = False
-    overpowerThreshold = int(os.getenv("OVERPOWER_THRESHOLD") or "200")
     while (not killThread):
         time.sleep(5)
         try:
@@ -23,15 +35,17 @@ def action_thread():
             continue
         print("Solar is currently providing " + str(currentSolarPower) + "W of power")
 
-        if (int(os.getenv("OVERPOWER") or 0) == 0):
+        if (not isOverpowerFeatureOn()):
             print("overpower feature off")
             continue
+
+        overpowerThreshold = currentOverpowerThreshold()
 
         if (overpowerOn):
             currentOverPowerDraw = int(overPowerPlug.getEnergyUsage()['result']['current_power'] / 1000)
             print("Pulling " + str(currentOverPowerDraw) + "W from over power")
         else:
-            print("no overpower")
+            print("no overpower (below " + str(overpowerThreshold)  + "W )")
 
         if overpowerOn and (currentSolarPower <= overpowerThreshold):
             print("Below overpower threshold. Turning off plug")
@@ -72,6 +86,12 @@ class TapoServer(BaseHTTPRequestHandler):
         ret['mth_avg']  = int(np.mean(res['past1y']))
         ret['mth_max']  = int(np.max(res['past1y']))
         ret['30d'] = res['past30d']
+
+        if (isOverpowerFeatureOn()):
+            ret['overpower_threshold'] = currentOverpowerThreshold()
+        else:
+            ret['overpower_threshold'] = -1
+
         return ret
 
     def sanitized_path(self):
