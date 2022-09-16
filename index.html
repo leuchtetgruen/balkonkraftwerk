@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="/style.css" type="text/css" media="all">
+    <!-- TODO dont load from jdelivr -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/plot.js"></script>
+    <title></title>
+  </head>
+  <body>
+    <h1 class="title" id="title">Solar Dashboard</h1>
+    <div class="grid-container">
+      <div class='diagram'>
+        <h2 id="curTitle"></h2>
+        <canvas id="cur" ></canvas>
+      </div>
+
+      <div class="diagram">
+        <h2 id="hourTitle"></h2>  
+        <canvas id="hour"></canvas>
+      </div>
+
+      <div class="diagram">
+        <h2 id="todayTitle"></h2>
+        <canvas id="today" ></canvas>
+      </div>
+
+      <div class="diagram">
+        <h2 id="monthTitle"></h2>
+        <canvas id="month" ></canvas>
+      </div>
+
+
+      <div class="diagram wide">
+        <h2 id="monthTitleTimeline"></h2>
+        <canvas id="timeline" ></canvas>
+      </div>
+    </div>
+
+    <script charset="utf-8">
+      loadData();
+      document.title = localize("appTitle");
+      setTitle("title", localize("appTitle"));
+    </script>
+  </body>
+</html>

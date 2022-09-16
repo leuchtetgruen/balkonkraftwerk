@@ -1,0 +1,26 @@
+body, html {
+  font-family: Arial, "MS Trebuchet", sans-serif;
+}
+
+div.grid-container {
+  height: 1024px;
+  display: grid;
+  gap: 50px;
+  grid-template-rows: 33% 33% 33%;
+  grid-template-columns: 50% 50%;
+}
+
+.title {
+  text-align: center;
+}
+
+div.diagram {
+  text-align: center;
+  display: block;
+  margin-top: 50px;
+}
+
+.wide {
+  grid-column-start: 1;
+  grid-column-end: 2;
+}
