@@ -1,4 +1,3 @@
 numpy
 PyP100
-meteostat
 python-dotenv

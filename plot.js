@@ -9,7 +9,6 @@ const langStrings = {
     "last 30 days": "Letzte 30 Tage",
     "wh per day": "Wh/Tag",
     "average wh": (a) => `Durchschnitt (${a[0]} Wh)`,
-    "sun minutes": "Sonnenminuten (in 10-Min-Abschnitten)",
     "hourly power": "Wh/Tagesstunde",
     "hourly power title": "Leistung über den Tag verteilt",
   },
@@ -23,7 +22,6 @@ const langStrings = {
     "last 30 days": "During last 30 days",
     "wh per day": "Wh/day",
     "average wh": (a) => `Average (${a[0]} Wh)`,
-    "sun minutes": "Sun (in 10-Min intervals)",
     "hourly power": "Wh/hour in the day",
     "hourly power title": "Power throughout the day",
   }
@@ -75,7 +73,7 @@ let loadData = function() {
     drawDonut(data['month'], data['mth_max'], [localize("last 30 days"), localize("maximum")], '#D5F5E3', 'month');
     
     setTitle("monthTitleTimeline", localize("last 30 days"));
-    drawTimeline(data['30d'], data['30d_avg'], data['sun'], 'timeline', localize("wh per day"))
+    drawTimeline(data['30d'], data['30d_avg'], 'timeline', localize("wh per day"))
 
     setTitle("hourlyAveragesTitle", localize("hourly power title"))
     drawHours(data['hours_avg'], "hourlyAverages", localize("hourly power"));
@@ -141,7 +139,7 @@ let drawHours = function(averages, id, title) {
 
 }
 
-let drawTimeline = function(values, avg, sun, id, title) {
+let drawTimeline = function(values, avg, id, title) {
   startDate = (new Date()).valueOf() - (29 * 24 * 60 * 60 * 1000);
   const data = {
     labels: values.map((v, i) => (new Date(startDate + (i*24*60*60*1000)).toLocaleDateString())),
@@ -158,14 +156,6 @@ let drawTimeline = function(values, avg, sun, id, title) {
         data: values.map((v) => avg),
         borderColor: 'blue'
       },
-      {
-        label: localize("sun minutes"),
-        data: sun,
-        borderColor: "orange",
-        fill: false,
-        cubicInterpolationMode: 'monotone',
-        tension: 0.4
-      }
     ]
   }
 

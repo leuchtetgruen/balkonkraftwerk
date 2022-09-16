@@ -7,30 +7,12 @@ from dotenv import load_dotenv
 from http.server import BaseHTTPRequestHandler,HTTPServer
 
 from datetime import datetime, timedelta
-from meteostat import Daily
-
 
 class TapoServer(BaseHTTPRequestHandler):
 
-    def get_30d_sun(self):
-        start = datetime.now() - timedelta(days=30)
-        end = datetime.now()
-
-        data = Daily(os.getenv("METEOSTAT_STATION_ID"), start, end)
-        data = data.fetch()
-        vals = list(data['tsun'])
-        suns = []
-        for v in vals:
-            if np.isnan(v):
-                suns.append(0)
-            else:
-                suns.append(v / 6)
-
-        suns.pop()
-        return suns
 
     def get_stats(self):
-        data = p110.getEnergyUsage()
+        data = solarPlug.getEnergyUsage()
         res = data['result']
         ret = {}
         ret['today']    = res['today_energy']
@@ -57,8 +39,6 @@ class TapoServer(BaseHTTPRequestHandler):
         ret['mth_avg']  = int(np.mean(res['past1y']))
         ret['mth_max']  = int(np.max(res['past1y']))
         ret['30d'] = res['past30d']
-        ret['sun'] = self.get_30d_sun()
-        # return data['result']
         return ret
 
     def sanitized_path(self):
@@ -92,9 +72,9 @@ class TapoServer(BaseHTTPRequestHandler):
 
 load_dotenv()
 port = int(os.getenv("PORT") or "8089")
-p110 = PyP110.P110(os.getenv("TAPO_IP"), os.getenv("TAPO_USERNAME"), os.getenv("TAPO_PASSWORD")) 
-p110.handshake()
-p110.login()
+solarPlug = PyP110.P110(os.getenv("TAPO_IP_SOLAR"), os.getenv("TAPO_USERNAME"), os.getenv("TAPO_PASSWORD")) 
+solarPlug.handshake()
+solarPlug.login()
 server = HTTPServer(('', port), TapoServer)
 print('Started httpserver on port ', port)
 
