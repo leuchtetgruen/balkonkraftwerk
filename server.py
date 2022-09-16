@@ -11,18 +11,29 @@ from http.server import BaseHTTPRequestHandler,HTTPServer
 from datetime import datetime, timedelta
 
 def action_thread():
-    time.sleep(5)
     overpowerOn = False
     overpowerThreshold = int(os.getenv("OVERPOWER_THRESHOLD") or "200")
     while (not killThread):
-        currentSolarPower = int(solarPlug.getEnergyUsage()['result']['current_power'] / 1000)
-
+        time.sleep(5)
+        try:
+            currentSolarPower = int(solarPlug.getEnergyUsage()['result']['current_power'] / 1000)
+        except:
+            print("something went wrong")
+            time.sleep(5)
+            continue
         print("Solar is currently providing " + str(currentSolarPower) + "W of power")
+
+        if (int(os.getenv("OVERPOWER") or 0) == 0):
+            print("overpower feature off")
+            continue
+
         if (overpowerOn):
             currentOverPowerDraw = int(overPowerPlug.getEnergyUsage()['result']['current_power'] / 1000)
             print("Pulling " + str(currentOverPowerDraw) + "W from over power")
+        else:
+            print("no overpower")
 
-        if overpowerOn and (currentSolarPower < overpowerThreshold):
+        if overpowerOn and (currentSolarPower <= overpowerThreshold):
             print("Below overpower threshold. Turning off plug")
             overPowerPlug.turnOff()
             overpowerOn = False
@@ -32,7 +43,6 @@ def action_thread():
             overPowerPlug.turnOn()
             overpowerOn = True
         
-        time.sleep(5)
 
 class TapoServer(BaseHTTPRequestHandler):
 
@@ -49,8 +59,6 @@ class TapoServer(BaseHTTPRequestHandler):
         hour_idx = datetime.now().hour
         hour_max = int(np.max([h[hour_idx] for h in res['past7d']]))
 
-
-        print(res['past7d'])
         avg_hrs = []
         for hour in range(0, 24):
             avg_hr = int(np.mean([day[hour] for day in res['past7d']]))
