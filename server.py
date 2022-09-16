@@ -1,5 +1,7 @@
 import json
 import numpy as np
+import time
+import threading
 import os
 from PyP100 import PyP110
 from dotenv import load_dotenv
@@ -8,8 +10,31 @@ from http.server import BaseHTTPRequestHandler,HTTPServer
 
 from datetime import datetime, timedelta
 
-class TapoServer(BaseHTTPRequestHandler):
+def action_thread():
+    time.sleep(5)
+    overpowerOn = False
+    overpowerThreshold = int(os.getenv("OVERPOWER_THRESHOLD") or "200")
+    while (not killThread):
+        currentSolarPower = int(solarPlug.getEnergyUsage()['result']['current_power'] / 1000)
 
+        print("Solar is currently providing " + str(currentSolarPower) + "W of power")
+        if (overpowerOn):
+            currentOverPowerDraw = int(overPowerPlug.getEnergyUsage()['result']['current_power'] / 1000)
+            print("Pulling " + str(currentOverPowerDraw) + "W from over power")
+
+        if overpowerOn and (currentSolarPower < overpowerThreshold):
+            print("Below overpower threshold. Turning off plug")
+            overPowerPlug.turnOff()
+            overpowerOn = False
+
+        if (not overpowerOn) and (currentSolarPower > overpowerThreshold):
+            print("Above overpower threshold. Turning on plug")
+            overPowerPlug.turnOn()
+            overpowerOn = True
+        
+        time.sleep(5)
+
+class TapoServer(BaseHTTPRequestHandler):
 
     def get_stats(self):
         data = solarPlug.getEnergyUsage()
@@ -75,8 +100,22 @@ port = int(os.getenv("PORT") or "8089")
 solarPlug = PyP110.P110(os.getenv("TAPO_IP_SOLAR"), os.getenv("TAPO_USERNAME"), os.getenv("TAPO_PASSWORD")) 
 solarPlug.handshake()
 solarPlug.login()
+
+overPowerPlug = PyP110.P110(os.getenv("TAPO_IP_OVERPOWER_PLUG"), os.getenv("TAPO_USERNAME"), os.getenv("TAPO_PASSWORD")) 
+overPowerPlug.handshake()
+overPowerPlug.login()
+
+killThread = False
+
 server = HTTPServer(('', port), TapoServer)
 print('Started httpserver on port ', port)
 
-#Wait forever for incoming http requests
-server.serve_forever()
+try:
+    t = threading.Thread(target=action_thread)
+    t.start()
+    #Wait forever for incoming http requests
+    server.serve_forever()
+except KeyboardInterrupt:
+    print("Turning off")
+    overPowerPlug.turnOff()
+    killThread = True
