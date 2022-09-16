@@ -41,6 +41,15 @@ class TapoServer(BaseHTTPRequestHandler):
 
         hour_idx = datetime.now().hour
         hour_max = int(np.max([h[hour_idx] for h in res['past7d']]))
+
+
+        print(res['past7d'])
+        avg_hrs = []
+        for hour in range(0, 24):
+            avg_hr = int(np.mean([day[hour] for day in res['past7d']]))
+            avg_hrs.append(avg_hr)
+
+        ret['hours_avg'] = avg_hrs
         ret['hr_max']   = hour_max
 
         ret['30d_avg']  = int(np.mean(res['past30d']))

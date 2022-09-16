@@ -10,6 +10,8 @@ const langStrings = {
     "wh per day": "Wh/Tag",
     "average wh": (a) => `Durchschnitt (${a[0]} Wh)`,
     "sun minutes": "Sonnenminuten (in 10-Min-Abschnitten)",
+    "hourly power": "Wh/Tagesstunde",
+    "hourly power title": "Leistung über den Tag verteilt",
   },
   "en-US": {
     "appTitle": "Solar Dashboard",
@@ -22,6 +24,8 @@ const langStrings = {
     "wh per day": "Wh/day",
     "average wh": (a) => `Average (${a[0]} Wh)`,
     "sun minutes": "Sun (in 10-Min intervals)",
+    "hourly power": "Wh/hour in the day",
+    "hourly power title": "Power throughout the day",
   }
 
 };
@@ -72,6 +76,9 @@ let loadData = function() {
     
     setTitle("monthTitleTimeline", localize("last 30 days"));
     drawTimeline(data['30d'], data['30d_avg'], data['sun'], 'timeline', localize("wh per day"))
+
+    setTitle("hourlyAveragesTitle", localize("hourly power title"))
+    drawHours(data['hours_avg'], "hourlyAverages", localize("hourly power"));
   };
 }
 
@@ -103,6 +110,35 @@ let drawDonut = function(value, total, labels, highlightColor, id) {
     document.getElementById(id),
     config
   );
+}
+
+let drawHours = function(averages, id, title) {
+  const data = {
+    labels: [...Array(24).keys()].map((i) => i.toString()),
+    datasets: [{
+      label: title,
+      data: averages,
+      borderColor: 'red',
+      fill: false,
+      cubicInterpolationMode: 'monotone',
+      tension: 0.4
+    }]
+  }
+
+  const config = {
+    type: 'line',
+    data: data,
+    options: {  
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  };
+
+  const myChart = new Chart(
+    document.getElementById(id),
+    config
+  );
+
 }
 
 let drawTimeline = function(values, avg, sun, id, title) {
