@@ -26,7 +26,7 @@ def isOverpowerFeatureOn():
 def action_thread():
     overpowerOn = False
     while (not killThread):
-        time.sleep(5)
+        time.sleep(30)
         try:
             currentSolarPower = int(solarPlug.getEnergyUsage()['result']['current_power'] / 1000)
         except:
@@ -47,7 +47,7 @@ def action_thread():
         else:
             print("no overpower (below " + str(overpowerThreshold)  + "W )")
 
-        if overpowerOn and (currentSolarPower <= overpowerThreshold):
+        if overpowerOn and (currentSolarPower <= ( 0.9 * overpowerThreshold) ):
             print("Below overpower threshold. Turning off plug")
             overPowerPlug.turnOff()
             overpowerOn = False
