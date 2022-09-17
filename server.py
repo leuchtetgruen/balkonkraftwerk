@@ -136,7 +136,7 @@ overPowerPlug.login()
 
 killThread = False
 
-server = HTTPServer(('127.0.0.1', port), TapoServer)
+server = HTTPServer(('0.0.0.0', port), TapoServer)
 print('Started httpserver on port ', port)
 
 try:
