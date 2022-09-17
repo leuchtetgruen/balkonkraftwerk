@@ -42,8 +42,10 @@ def action_thread():
 
         overpowerThreshold = currentOverpowerThreshold()
 
+        # doing this here so connection to plug doesnt get lost
+        currentOverPowerDraw = int(overPowerPlug.getEnergyUsage()['result']['current_power'] / 1000)
+
         if (overpowerOn):
-            currentOverPowerDraw = int(overPowerPlug.getEnergyUsage()['result']['current_power'] / 1000)
             print("Pulling " + str(currentOverPowerDraw) + "W from over power")
         else:
             print("no overpower (below " + str(overpowerThreshold)  + "W )")
