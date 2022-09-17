@@ -24,9 +24,10 @@ def isOverpowerFeatureOn():
     return ( int(os.getenv("OVERPOWER") or 0) > 0 )
 
 def action_thread():
+    overpowerCheckInterval = int(os.getenv("OVERPOWER_CHECK_INTERVAL") or 30)
     overpowerOn = False
     while (not killThread):
-        time.sleep(30)
+        time.sleep(overpowerCheckInterval)
         try:
             currentSolarPower = int(solarPlug.getEnergyUsage()['result']['current_power'] / 1000)
         except:
