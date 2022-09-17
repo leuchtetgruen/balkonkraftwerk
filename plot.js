@@ -2,6 +2,7 @@ const langStrings = {
   "de-DE": {
     "appTitle": "Solar-Dashboard",
     "currently": "Aktuell",
+    "currently overpower": (a) => `Aktuell ${a[0]}W in Overpower`,
     "maximum": "Maximum",
     "now": "Jetzt",
     "in this hour": (a) => `Zwischen ${a[0]} und ${a[1]} Uhr`,
@@ -15,6 +16,7 @@ const langStrings = {
   "en-US": {
     "appTitle": "Solar Dashboard",
     "currently": "currently",
+    "currently overpower": (a) => `Currently ${a[0]} in Overpower`,
     "maximum": "max.",
     "now": "now",
     "in this hour": (a) => `Between ${a[0]} and ${a[1]} o'clock`,
@@ -58,7 +60,16 @@ let loadData = function() {
     data = JSON.parse(xhr.response);
     console.log(data);
 
-    setTitle("curTitle", localize("currently"))
+    cur = data['cur']
+    overpower_threshold = data['overpower_threshold']
+    console.log(cur - overpower_threshold)
+    if  ( cur < overpower_threshold ) {
+      setTitle("curTitle", localize("currently"))
+    }
+    else {
+      setTitle("curTitle", localize("currently overpower", [ ( cur - overpower_threshold) ] ))
+    }
+
     drawDonut(data['cur'], data['cur_max'], [localize("currently"), localize("maximum")], '#F9E79F','cur')
 
     let curHr = (new Date()).getHours();
@@ -92,7 +103,7 @@ let drawDonut = function(value, total, labels, highlightColor, id) {
       backgroundColor: [
         highlightColor,
         '#eeeeee'
-      ]
+      ],
     }]
   };
   const config = {

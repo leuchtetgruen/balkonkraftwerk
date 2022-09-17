@@ -93,7 +93,7 @@ class TapoServer(BaseHTTPRequestHandler):
         if (isOverpowerFeatureOn()):
             ret['overpower_threshold'] = currentOverpowerThreshold()
         else:
-            ret['overpower_threshold'] = -1
+            ret['overpower_threshold'] = 1000000
 
         return ret
 
