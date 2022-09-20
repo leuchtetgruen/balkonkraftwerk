@@ -23,13 +23,22 @@ def currentOverpowerThreshold():
 def isOverpowerFeatureOn():
     return ( int(os.getenv("OVERPOWER") or 0) > 0 )
 
+def getEnergyUsageWithFailsafe(plug):
+    try:
+        energyUsage = plug.getEnergyUsage()
+        return energyUsage
+    except:
+        plug.login()
+        plug.handshake()
+        return plug.getEnergyUsage()
+
 def action_thread():
     overpowerCheckInterval = int(os.getenv("OVERPOWER_CHECK_INTERVAL") or 30)
     overpowerOn = False
     while (not killThread):
         time.sleep(overpowerCheckInterval)
         try:
-            currentSolarPower = int(solarPlug.getEnergyUsage()['result']['current_power'] / 1000)
+            currentSolarPower = int(getEnergyUsageWithFailsafe(solarPlug)['result']['current_power'] / 1000)
         except:
             print("something went wrong")
             time.sleep(5)
@@ -43,7 +52,7 @@ def action_thread():
         overpowerThreshold = currentOverpowerThreshold()
 
         # doing this here so connection to plug doesnt get lost
-        currentOverPowerDraw = int(overPowerPlug.getEnergyUsage()['result']['current_power'] / 1000)
+        currentOverPowerDraw = int(getEnergyUsageWithFailsafe(overPowerPlug)['result']['current_power'] / 1000)
 
         if (overpowerOn):
             print("Pulling " + str(currentOverPowerDraw) + "W from over power")
@@ -64,7 +73,7 @@ def action_thread():
 class TapoServer(BaseHTTPRequestHandler):
 
     def get_stats(self):
-        data = solarPlug.getEnergyUsage()
+        data = getEnergyUsageWithFailsafe(solarPlug)
         res = data['result']
         ret = {}
         ret['today']    = res['today_energy']
