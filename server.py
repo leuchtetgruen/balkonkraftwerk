@@ -28,8 +28,9 @@ def getEnergyUsageWithFailsafe(plug):
         energyUsage = plug.getEnergyUsage()
         return energyUsage
     except:
-        plug.login()
+        plug = Py100.P110(plug.ipAddress, plug.email, plug.password)
         plug.handshake()
+        plug.login()
         return plug.getEnergyUsage()
 
 def action_thread():
