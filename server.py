@@ -33,6 +33,24 @@ def getEnergyUsageWithFailsafe(plug):
         plug.login()
         return plug.getEnergyUsage()
 
+def turnOffWithFailsafe(plug):
+    try:
+        plug.turnOff()
+    except:
+        plug = PyP110.P110(plug.ipAddress, plug.email, plug.password)
+        plug.handshake()
+        plug.login()
+        plug.turnOff()
+
+def turnOnWithFailsafe(plug):
+    try:
+        plug.turnOn()
+    except:
+        plug = PyP110.P110(plug.ipAddress, plug.email, plug.password)
+        plug.handshake()
+        plug.login()
+        plug.turnOn()
+
 def action_thread():
     overpowerCheckInterval = int(os.getenv("OVERPOWER_CHECK_INTERVAL") or 30)
     overpowerOn = False
@@ -62,12 +80,12 @@ def action_thread():
 
         if overpowerOn and (currentSolarPower <= ( 0.9 * overpowerThreshold) ):
             print("Below overpower threshold. Turning off plug")
-            overPowerPlug.turnOff()
+            turnOffWithFailsafe(overPowerPlug)
             overpowerOn = False
 
         if (not overpowerOn) and (currentSolarPower > overpowerThreshold):
             print("Above overpower threshold. Turning on plug")
-            overPowerPlug.turnOn()
+            turnOnWithFailsafe(overPowerPlug)
             overpowerOn = True
         
 
@@ -158,5 +176,5 @@ try:
     server.serve_forever()
 except KeyboardInterrupt:
     print("Turning off")
-    overPowerPlug.turnOff()
+    turnOffWithFailsafe(overPowerPlug)
     killThread = True
