@@ -52,8 +52,11 @@ def turnOnWithFailsafe(plug):
         plug.turnOn()
 
 def action_thread():
+    global currentOverPowerDraw
+    global killThread
+    global overpowerOn
+
     overpowerCheckInterval = int(os.getenv("OVERPOWER_CHECK_INTERVAL") or 30)
-    overpowerOn = False
     while (not killThread):
         time.sleep(overpowerCheckInterval)
         try:
@@ -92,6 +95,8 @@ def action_thread():
 class TapoServer(BaseHTTPRequestHandler):
 
     def get_stats(self):
+        global currentOverPowerDraw
+        global overpowerOn
         data = getEnergyUsageWithFailsafe(solarPlug)
         res = data['result']
         ret = {}
@@ -122,6 +127,9 @@ class TapoServer(BaseHTTPRequestHandler):
             ret['overpower_threshold'] = currentOverpowerThreshold()
         else:
             ret['overpower_threshold'] = 1000000
+
+        ret['overpower_draw'] = currentOverPowerDraw
+        ret['overpower_on'] = overpowerOn
 
         return ret
 
@@ -165,6 +173,8 @@ overPowerPlug.handshake()
 overPowerPlug.login()
 
 killThread = False
+overpowerOn = False
+currentOverPowerDraw = 0
 
 server = HTTPServer(('0.0.0.0', port), TapoServer)
 print('Started httpserver on port ', port)
